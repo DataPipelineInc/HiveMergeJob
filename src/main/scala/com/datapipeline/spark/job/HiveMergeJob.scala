@@ -58,9 +58,9 @@ object HiveMergeJob {
       // 将需要合并的文件mv到临时目录
       moveFiles(fileSystem, mergeTime, srcDataPath, mergeSrcPath, true)
       val partitionNum = computePartitionNum(fileSystem, mergeSrcPath, partitionSize)
-      val srcDF = sqlContext.read.format("csv").load(mergeSrcPath + "/")
+      val srcDF = sqlContext.read.format("text").load(mergeSrcPath + "/")
       // 将合并目录的src子目录下的文件合并后保存到合并目录的data子目录下
-      srcDF.coalesce(partitionNum).write.format("csv").mode(SaveMode.Overwrite).save(mergeDataPath)
+      srcDF.coalesce(partitionNum).write.format("text").mode(SaveMode.Overwrite).save(mergeDataPath)
       // 将合并目录的data目录下的文件移动到原目录
       moveFiles(fileSystem, mergeTime, mergeDataPath, srcDataPath, false)
       // 删除 合并目录src的子目录
