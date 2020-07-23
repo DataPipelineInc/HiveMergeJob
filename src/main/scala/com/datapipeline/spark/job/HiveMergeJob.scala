@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.log4j.Logger
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.{SQLContext, SaveMode, SparkSession}
 
@@ -16,7 +15,6 @@ object HiveMergeJob {
       .builder().config(sparkConf)
       .getOrCreate()
     val sc = spark.sparkContext
-    val logger = Logger.getLogger("org")
     val fileSystem = FileSystem.get(sc.hadoopConfiguration)
     //    val srcDataPath = "/tmp/source"
     if (args.length < 1) {
@@ -29,7 +27,7 @@ object HiveMergeJob {
     val mergeTime = sdf.format(new Date())
     val partitionSize = if (args.length > 1) args(1).toInt else 128
     val result = mergeFiles(spark.sqlContext, fileSystem, mergeTime, srcDataPath, mergePath, partitionSize)
-    logger.info("result: " + result)
+    println(result)
   }
 
   /**
@@ -50,8 +48,9 @@ object HiveMergeJob {
    */
   def mergeFiles(sqlContext: SQLContext, fileSystem: FileSystem, mergeTime: String,
                  srcDataPath: String, mergePath: String, partitionSize: Int): String = {
-    val mergeSrcPath = mergePath + "/" + mergeTime + "/src"
-    val mergeDataPath = mergePath + "/" + mergeTime + "/data"
+    val partitionPath = srcDataPath.split("/")(srcDataPath.split("/").length - 1)
+    val mergeSrcPath = s"$mergePath/$partitionPath/$mergeTime/src"
+    val mergeDataPath = s"$mergePath/$partitionPath/$mergeTime/data"
     var mergeInfo = "merge success"
 
     try {
